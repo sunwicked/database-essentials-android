@@ -150,7 +150,7 @@ public class DatabaseManager {
 				.getColumnIndexOrThrow(TABLE_ROW_PHONENUM)));
 		rowObj.setEmail(cursor.getString(cursor
 				.getColumnIndexOrThrow(TABLE_ROW_EMAIL)));
-		rowObj.setPhoto(cursor.getString(5)); // alternate way to pick data if
+		rowObj.setPhoto(cursor.getString(4)); // alternate way to pick data if
 												// we know the column number
 	}
 

@@ -3,6 +3,7 @@ package com.db.personalcontactmanager;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,13 @@ public class CustomListAdapter extends BaseAdapter {
 		dm = new DatabaseManager(_context);
 		smsModelList = dm.getAllData();
 
+	}
+	@Override
+	public void notifyDataSetChanged() {
+		// TODO Auto-generated method stub
+		super.notifyDataSetChanged();
+		smsModelList = dm.getAllData();
+		
 	}
 
 	@Override
