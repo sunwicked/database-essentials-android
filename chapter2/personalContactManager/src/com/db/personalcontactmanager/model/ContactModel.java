@@ -1,9 +1,17 @@
 package com.db.personalcontactmanager.model;
 
-public class Contact {
+public class ContactModel {
 
 	private long id;
-	private String name, contactNo, email;
+	private String name, contactNo, email,photo;
+
+	public String getPhoto() {
+		return photo;
+	}
+
+	public void setPhoto(String photo) {
+		this.photo = photo;
+	}
 
 	public long getId() {
 		return id;
