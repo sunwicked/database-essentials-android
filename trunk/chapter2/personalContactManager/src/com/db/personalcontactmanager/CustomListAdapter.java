@@ -3,7 +3,8 @@ package com.db.personalcontactmanager;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,35 +56,49 @@ public class CustomListAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		View vi = convertView;
 		ViewHolder vHolder;
 		if (convertView == null) {
-			vi = inflater.inflate(R.layout.contact_list_row, null);
+			convertView = inflater.inflate(R.layout.contact_list_row, null);
 			vHolder = new ViewHolder();
 
-			vHolder.contact_name = (TextView) vi
+			vHolder.contact_name = (TextView) convertView
 					.findViewById(R.id.contact_name);
-			vHolder.contact_phone = (TextView) vi
+			vHolder.contact_phone = (TextView) convertView
 					.findViewById(R.id.contact_phone);
-			vHolder.contact_email = (TextView) vi
+			vHolder.contact_email = (TextView) convertView
 					.findViewById(R.id.contact_email);
-			vHolder.contact_photo = (ImageView) vi
+			vHolder.contact_photo = (ImageView) convertView
 					.findViewById(R.id.contact_photo);
-			vi.setTag(vHolder);
+			convertView.setTag(vHolder);
 		} else {
-			vHolder = (ViewHolder) vi.getTag();
+			vHolder = (ViewHolder) convertView.getTag();
 		}
 		ContactModel contactObj = smsModelList.get(position);
 
 		vHolder.contact_name.setText(contactObj.getName());
 		vHolder.contact_phone.setText(contactObj.getContactNo());
 		vHolder.contact_email.setText(contactObj.getEmail());
-
-		return vi;
+		setImage(contactObj.getPhoto(), vHolder.contact_photo);
+		
+		return convertView;
 	}
 
-	static class ViewHolder {
+	class ViewHolder {
 		ImageView contact_photo;
 		TextView contact_name, contact_phone, contact_email;
+	}
+	
+	/**
+	 * 
+	 * @brief: setImage
+	 *
+	 * @return void
+	 *
+	 * @detail: returns the Image in the Blob format (byte array format)
+	 */
+	private void setImage(byte[] blob, ImageView img) {
+		
+		Bitmap bmp = BitmapFactory.decodeByteArray(blob, 0, blob.length);
+		img.setImageBitmap(bmp);
 	}
 }

@@ -15,17 +15,17 @@ import com.db.personalcontactmanager.model.ContactModel;
 public class DatabaseManager {
 
 	private SQLiteDatabase db; // a reference to the database manager class.
-	private final String DB_NAME = "sms"; // the name of our database
-	private final int DB_VERSION = 1; // the version of the database
+	private static final String DB_NAME = "contact"; // the name of our database
+	private static final int DB_VERSION = 1; // the version of the database
 
-	private final String TABLE_NAME = "contact_table";// table name
+	private static final String TABLE_NAME = "contact_table";// table name
 
 	// the names for our database columns
-	private final String TABLE_ROW_ID = "_id";
-	private final String TABLE_ROW_NAME = "contact_name";
-	private final String TABLE_ROW_PHONENUM = "contact_number";
-	private final String TABLE_ROW_EMAIL = "contact_email";
-	private final String TABLE_ROW_PHOTOID = "photo_id";
+	private static final String TABLE_ROW_ID = "_id";
+	private static final String TABLE_ROW_NAME = "contact_name";
+	private static final String TABLE_ROW_PHONENUM = "contact_number";
+	private static final String TABLE_ROW_EMAIL = "contact_email";
+	private static final String TABLE_ROW_PHOTOID = "photo_id";
 	private Context context;
 
 	public DatabaseManager(Context context) {
@@ -38,6 +38,7 @@ public class DatabaseManager {
 
 	// the beginnings our SQLiteOpenHelper class
 	private class CustomSQLiteOpenHelper extends SQLiteOpenHelper {
+
 		public CustomSQLiteOpenHelper(Context context) {
 			super(context, DB_NAME, null, DB_VERSION);
 		}
@@ -51,7 +52,7 @@ public class DatabaseManager {
 					+ " integer primary key autoincrement not null,"
 					+ TABLE_ROW_NAME + " text not null," + TABLE_ROW_PHONENUM
 					+ " text not null," + TABLE_ROW_EMAIL + " text not null,"
-					+ TABLE_ROW_PHOTOID + " text not null" + ");";
+					+ TABLE_ROW_PHOTOID + " BLOB" + ");";
 
 			// execute the query string to the database.
 			db.execSQL(newTableQueryString);
@@ -62,6 +63,9 @@ public class DatabaseManager {
 
 			// LATER, WE WOULD SPECIFIY HOW TO UPGRADE THE DATABASE
 			// FROM OLDER VERSIONS.
+			String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
+			db.execSQL(DROP_TABLE);
+			 onCreate(db);
 
 		}
 
@@ -81,6 +85,7 @@ public class DatabaseManager {
 	}
 
 	private ContentValues prepareData(ContactModel contactObj) {
+
 		ContentValues values = new ContentValues();
 		values.put(TABLE_ROW_NAME, contactObj.getName());
 		values.put(TABLE_ROW_PHONENUM, contactObj.getContactNo());
@@ -90,6 +95,7 @@ public class DatabaseManager {
 	}
 
 	public ContactModel getRowAsObject(int rowID) {
+
 		ContactModel rowContactObj = new ContactModel();
 		Cursor cursor;
 
@@ -115,15 +121,20 @@ public class DatabaseManager {
 	}
 
 	public ArrayList<ContactModel> getAllData() {
+
 		ArrayList<ContactModel> allRowsObj = new ArrayList<ContactModel>();
 		Cursor cursor;
 		ContactModel rowContactObj;
+
+		String[] columns = new String[] { TABLE_ROW_ID, TABLE_ROW_NAME,
+				TABLE_ROW_PHONENUM, TABLE_ROW_EMAIL, TABLE_ROW_PHOTOID };
+
 		try {
 
-			cursor = db.query(TABLE_NAME, new String[] { TABLE_ROW_ID,
-					TABLE_ROW_NAME, TABLE_ROW_PHONENUM, TABLE_ROW_EMAIL,
-					TABLE_ROW_PHOTOID }, null, null, null, null, null);
+			cursor = db
+					.query(TABLE_NAME, columns, null, null, null, null, null);
 			cursor.moveToFirst();
+
 			if (!cursor.isAfterLast()) {
 				do {
 					rowContactObj = new ContactModel();
@@ -144,14 +155,15 @@ public class DatabaseManager {
 	}
 
 	private void prepareSendObject(ContactModel rowObj, Cursor cursor) {
+
 		rowObj.setName(cursor.getString(cursor
 				.getColumnIndexOrThrow(TABLE_ROW_NAME)));
 		rowObj.setContactNo(cursor.getString(cursor
 				.getColumnIndexOrThrow(TABLE_ROW_PHONENUM)));
 		rowObj.setEmail(cursor.getString(cursor
 				.getColumnIndexOrThrow(TABLE_ROW_EMAIL)));
-		rowObj.setPhoto(cursor.getString(4)); // alternate way to pick data if
-												// we know the column number
+		rowObj.setPhoto(cursor.getBlob(cursor
+				.getColumnIndexOrThrow(TABLE_ROW_PHOTOID))); 
 	}
 
 	public void deleteRow(int rowID) {
