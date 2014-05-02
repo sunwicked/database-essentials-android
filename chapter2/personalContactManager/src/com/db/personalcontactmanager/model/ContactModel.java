@@ -3,14 +3,16 @@ package com.db.personalcontactmanager.model;
 public class ContactModel {
 
 	private long id;
-	private String name, contactNo, email,photo;
+	private String name, contactNo, email;
 
-	public String getPhoto() {
-		return photo;
+	byte[] byteArray;
+	
+	public byte[] getPhoto() {
+		return byteArray;
 	}
 
-	public void setPhoto(String photo) {
-		this.photo = photo;
+	public void setPhoto(byte[] array) {
+		byteArray = array;
 	}
 
 	public long getId() {
