@@ -17,31 +17,40 @@ import com.db.personalcontactmanager.model.ContactModel;
 
 public class CustomListAdapter extends BaseAdapter {
 	DatabaseManager dm;
-	ArrayList<ContactModel> smsModelList;
+	ArrayList<ContactModel> contactModelList;
 	LayoutInflater inflater;
 	Context _context;
 
 	public CustomListAdapter(Context context) {
 
-		smsModelList = new ArrayList<ContactModel>();
+		contactModelList = new ArrayList<ContactModel>();
 		_context = context;
 		inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		dm = new DatabaseManager(_context);
-		smsModelList = dm.getAllData();
+		contactModelList = dm.getAllData();
 
 	}
 	@Override
 	public void notifyDataSetChanged() {
 		// TODO Auto-generated method stub
 		super.notifyDataSetChanged();
-		smsModelList = dm.getAllData();
+		contactModelList = dm.getAllData();
 		
 	}
+	
+	public void delRow(int delPosition) {
+        // TODO Auto-generated method stub
+
+       dm.deleteRow(contactModelList.get(delPosition).getId());
+       contactModelList.remove(delPosition);
+
+}
+
 
 	@Override
 	public int getCount() {
-		return smsModelList.size();
+		return contactModelList.size();
 	}
 
 	@Override
@@ -73,7 +82,7 @@ public class CustomListAdapter extends BaseAdapter {
 		} else {
 			vHolder = (ViewHolder) convertView.getTag();
 		}
-		ContactModel contactObj = smsModelList.get(position);
+		ContactModel contactObj = contactModelList.get(position);
 
 		vHolder.contact_name.setText(contactObj.getName());
 		vHolder.contact_phone.setText(contactObj.getContactNo());

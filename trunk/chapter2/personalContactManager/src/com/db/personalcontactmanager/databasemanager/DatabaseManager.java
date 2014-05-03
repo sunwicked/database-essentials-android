@@ -65,7 +65,7 @@ public class DatabaseManager {
 			// FROM OLDER VERSIONS.
 			String DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
 			db.execSQL(DROP_TABLE);
-			 onCreate(db);
+			onCreate(db);
 
 		}
 
@@ -155,7 +155,7 @@ public class DatabaseManager {
 	}
 
 	private void prepareSendObject(ContactModel rowObj, Cursor cursor) {
-
+		rowObj.setId(cursor.getInt(cursor.getColumnIndexOrThrow(TABLE_ROW_ID)));
 		rowObj.setName(cursor.getString(cursor
 				.getColumnIndexOrThrow(TABLE_ROW_NAME)));
 		rowObj.setContactNo(cursor.getString(cursor
@@ -163,7 +163,7 @@ public class DatabaseManager {
 		rowObj.setEmail(cursor.getString(cursor
 				.getColumnIndexOrThrow(TABLE_ROW_EMAIL)));
 		rowObj.setPhoto(cursor.getBlob(cursor
-				.getColumnIndexOrThrow(TABLE_ROW_PHOTOID))); 
+				.getColumnIndexOrThrow(TABLE_ROW_PHOTOID)));
 	}
 
 	public void deleteRow(int rowID) {
