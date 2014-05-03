@@ -1,5 +1,7 @@
 package com.db.personalcontactmanager;
 
+import com.db.personalcontactmanager.model.ContactModel;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,7 +18,11 @@ import android.widget.ListView;
 public class ContactsMainActivity extends Activity implements OnClickListener {
 
 	final static String TAG = "MainActivity";
-	final static int CON_REQ_CODE = 100;
+	public final static int CONTACT_ADD_REQ_CODE = 100;
+	public final static int CONTACT_UPDATE_REQ_CODE = 101;
+	public final static String REQ_TYPE ="req_type";
+	public final static String ITEM_POSITION ="item_position";
+	
 	private ListView listReminder;
 	private Button addNewButton;
 
@@ -32,6 +38,7 @@ public class ContactsMainActivity extends Activity implements OnClickListener {
 
 		cAdapter = new CustomListAdapter(this);
 		listReminder.setAdapter(cAdapter);
+		
 		registerForContextMenu(listReminder);
 
 	}
@@ -52,7 +59,8 @@ public class ContactsMainActivity extends Activity implements OnClickListener {
 		case R.id.addNew:
 			Intent intent = new Intent(ContactsMainActivity.this,
 					AddNewContactActivity.class);
-			startActivityForResult(intent, CON_REQ_CODE);
+			intent.putExtra(REQ_TYPE, CONTACT_ADD_REQ_CODE);
+			startActivityForResult(intent, CONTACT_ADD_REQ_CODE);
 			break;
 		}
 	}
@@ -68,13 +76,26 @@ public class ContactsMainActivity extends Activity implements OnClickListener {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		ContactModel contactObj = (ContactModel) cAdapter.getItem(info.position);
+		
 		switch (item.getItemId()) {
 		case R.id.delete_item:
-			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-					.getMenuInfo();
-			cAdapter.delRow((int) info.id);
+			
+			cAdapter.delRow(info.position);
 			cAdapter.notifyDataSetChanged();
 			return true;
+		case R.id.update_item:
+			
+			Intent intent = new Intent(ContactsMainActivity.this,
+					AddNewContactActivity.class);
+			intent.putExtra(ITEM_POSITION, contactObj.getId());
+			intent.putExtra(REQ_TYPE, CONTACT_UPDATE_REQ_CODE);
+			startActivityForResult(intent, CONTACT_ADD_REQ_CODE);
+			
+			break;
 		}
 		return super.onContextItemSelected(item);
 	}
@@ -83,13 +104,19 @@ public class ContactsMainActivity extends Activity implements OnClickListener {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode == CON_REQ_CODE) {
+		if (requestCode == CONTACT_ADD_REQ_CODE) {
 			if (resultCode == RESULT_OK) {
 				cAdapter.notifyDataSetChanged();
 			} else if (resultCode == RESULT_CANCELED) {
 
 			}
-		}
+		} else if (requestCode == CONTACT_UPDATE_REQ_CODE) {
+			if (resultCode == RESULT_OK) {
+				cAdapter.notifyDataSetChanged();
+			} else if (resultCode == RESULT_CANCELED) {
+
+			}
+		} 
 	}
 
 }

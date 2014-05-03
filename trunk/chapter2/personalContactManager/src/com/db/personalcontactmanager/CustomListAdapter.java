@@ -28,21 +28,21 @@ public class CustomListAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		dm = new DatabaseManager(_context);
-		contactModelList = dm.getAllData();
+		contactModelList = dm.getAllDataAlternative();
 
 	}
 	@Override
 	public void notifyDataSetChanged() {
 		// TODO Auto-generated method stub
 		super.notifyDataSetChanged();
-		contactModelList = dm.getAllData();
+		contactModelList = dm.getAllDataAlternative();
 		
 	}
 	
 	public void delRow(int delPosition) {
         // TODO Auto-generated method stub
 
-       dm.deleteRow(contactModelList.get(delPosition).getId());
+       dm.deleteRowAlternative(contactModelList.get(delPosition).getId());
        contactModelList.remove(delPosition);
 
 }
@@ -55,7 +55,7 @@ public class CustomListAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-		return null;
+		return contactModelList.get(position);
 	}
 
 	@Override
@@ -82,6 +82,7 @@ public class CustomListAdapter extends BaseAdapter {
 		} else {
 			vHolder = (ViewHolder) convertView.getTag();
 		}
+		
 		ContactModel contactObj = contactModelList.get(position);
 
 		vHolder.contact_name.setText(contactObj.getName());

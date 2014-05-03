@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import com.db.personalcontactmanager.model.ContactModel;
@@ -78,10 +79,35 @@ public class DatabaseManager {
 			db.insert(TABLE_NAME, null, values);
 		} catch (Exception e) {
 			Log.e("DB ERROR", e.toString()); // prints the error message to
-												// the
-												// log
+			// the
+			// log
 			e.printStackTrace(); // prints the stack trace to the log
 		}
+	}
+
+	/**
+	 * 
+	 * @param contactObj
+	 */
+	public void addRowAlternative(ContactModel contactObj) {
+
+		String insertStatment = "INSERT INTO " + TABLE_NAME 
+				+ " ("
+				+ TABLE_ROW_NAME + ","
+				+ TABLE_ROW_PHONENUM + ","
+				+ TABLE_ROW_EMAIL + ","
+				+ TABLE_ROW_PHOTOID
+				+ ") "
+				+ " VALUES "
+				+ "(?,?,?,?)";
+
+		SQLiteStatement s = db.compileStatement(insertStatment);
+		s.bindString(1, contactObj.getName());
+		s.bindString(2, contactObj.getContactNo());
+		s.bindString(3, contactObj.getEmail());
+		s.bindBlob(4, contactObj.getPhoto());
+
+		s.execute();
 	}
 
 	private ContentValues prepareData(ContactModel contactObj) {
@@ -110,8 +136,41 @@ public class DatabaseManager {
 				do {
 					prepareSendObject(rowContactObj, cursor);
 				} while (cursor.moveToNext()); // try to move the cursor's
-												// pointer forward one position.
+				// pointer forward one position.
 			}
+		} catch (SQLException e) {
+			Log.e("DB ERROR", e.toString());
+			e.printStackTrace();
+		}
+
+		return rowContactObj;
+	}
+
+	/**
+	 * 
+	 * @param rowID
+	 * @return
+	 */
+	public ContactModel getRowAsObjectAlternative(int rowID) {
+
+		ContactModel rowContactObj = new ContactModel();
+		Cursor cursor;
+
+		try {
+
+			//query to fetch all the columns and rows of the table
+			String queryStatement = "SELECT * FROM " + TABLE_NAME 
+					+ " WHERE " + TABLE_ROW_ID + "=?";
+
+			cursor = db.rawQuery(queryStatement, new String[]{String.valueOf(rowID)});
+			cursor.moveToFirst();
+			
+			//if (!cursor.isAfterLast()) {
+				rowContactObj = new ContactModel();
+				rowContactObj.setId(cursor.getInt(0));
+				prepareSendObject(rowContactObj, cursor);
+			//}
+			
 		} catch (SQLException e) {
 			Log.e("DB ERROR", e.toString());
 			e.printStackTrace();
@@ -143,7 +202,7 @@ public class DatabaseManager {
 					allRowsObj.add(rowContactObj);
 
 				} while (cursor.moveToNext()); // try to move the cursor's
-												// pointer forward one position.
+				// pointer forward one position.
 			}
 		} catch (SQLException e) {
 			Log.e("DB ERROR", e.toString());
@@ -152,6 +211,45 @@ public class DatabaseManager {
 
 		return allRowsObj;
 
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public ArrayList<ContactModel> getAllDataAlternative() {
+
+		ArrayList<ContactModel> allRowsObj = new ArrayList<ContactModel>();
+		Cursor cursor;
+		ContactModel rowContactObj;
+
+		try {
+
+			//query to fetch all the columns and rows of the table
+			String queryStatement = "SELECT" + " * " + "FROM " + TABLE_NAME;
+
+			//one more way of fetching data on the basis of column id mentioned
+			/*queryStatement = "SELECT " + TABLE_ROW_NAME + "," + TABLE_ROW_PHONENUM + "," + 
+					TABLE_ROW_EMAIL + "," + TABLE_ROW_PHOTOID + " FROM " + TABLE_NAME;*/
+
+			cursor = db.rawQuery(queryStatement, null);
+
+			cursor.moveToFirst();
+			if (!cursor.isAfterLast()) {
+				do {
+					rowContactObj = new ContactModel();
+					rowContactObj.setId(cursor.getInt(0));
+					prepareSendObject(rowContactObj, cursor);
+					allRowsObj.add(rowContactObj);
+
+				} while (cursor.moveToNext()); // try to move the cursor's
+				// pointer forward one position.
+			}
+		} catch (SQLException e) {
+			Log.e("DB ERROR", e.toString());
+			e.printStackTrace();
+		}
+		return allRowsObj;
 	}
 
 	private void prepareSendObject(ContactModel rowObj, Cursor cursor) {
@@ -174,6 +272,54 @@ public class DatabaseManager {
 			Log.e("DB ERROR", e.toString());
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 
+	 * @param rowId
+	 */
+	public void deleteRowAlternative(int rowId) {
+
+		String deleteStatement = "DELETE FROM " + TABLE_NAME + " WHERE " + TABLE_ROW_ID + "=?";
+		SQLiteStatement s = db.compileStatement(deleteStatement);
+		s.bindLong(1, rowId);
+		s.executeUpdateDelete();
+	}
+
+	public void updateRow(int rowId, ContactModel contactObj) {
+
+		ContentValues values = prepareData(contactObj);
+
+		String whereClause = TABLE_ROW_ID + "=?";
+		String whereArgs[] = new String[] {String.valueOf(rowId)};
+
+
+		db.update(TABLE_NAME, values, whereClause, whereArgs);
+
+	}
+
+	/**
+	 * 
+	 * @param rowId
+	 * @param contactObj
+	 */
+	public void updateRowAlternative(int rowId, ContactModel contactObj) {
+
+		String updateStatement = "UPDATE " + TABLE_NAME + " SET "
+				+ TABLE_ROW_NAME     + "=?,"
+				+ TABLE_ROW_PHONENUM + "=?,"
+				+ TABLE_ROW_EMAIL    + "=?,"
+				+ TABLE_ROW_PHOTOID  + "=?"
+				+ " WHERE " + TABLE_ROW_ID + "=?";
+
+		SQLiteStatement s = db.compileStatement(updateStatement);
+		s.bindString(1, contactObj.getName());
+		s.bindString(2, contactObj.getContactNo());
+		s.bindString(3, contactObj.getEmail());
+		s.bindBlob(4, contactObj.getPhoto());
+		s.bindLong(5, rowId);
+
+		s.executeUpdateDelete();
 	}
 
 }
