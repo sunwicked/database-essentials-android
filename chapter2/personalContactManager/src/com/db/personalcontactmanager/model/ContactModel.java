@@ -2,10 +2,10 @@ package com.db.personalcontactmanager.model;
 
 public class ContactModel {
 
-	private long id;
+	private int id;
 	private String name, contactNo, email;
 
-	byte[] byteArray;
+	private byte[] byteArray;
 	
 	public byte[] getPhoto() {
 		return byteArray;
@@ -15,11 +15,11 @@ public class ContactModel {
 		byteArray = array;
 	}
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
