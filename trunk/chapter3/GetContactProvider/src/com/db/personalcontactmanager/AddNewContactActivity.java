@@ -12,27 +12,33 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.db.personalcontactmanager.databasemanager.DatabaseManager;
 import com.db.personalcontactmanager.model.ContactModel;
 import com.example.getcontactprovider.R;
 
-public class AddNewContactActivity extends Activity implements OnClickListener{
+public class AddNewContactActivity extends Activity implements OnClickListener {
 
 	public final static int PICK_PHOTO_FROM_GALLERY = 1001;
 	public final static int CAPTURE_PHOTO_FROM_CAMERA = 1002;
+	private final static int PICK_CONTACT = 1003;
 
-	private TextView contactName, contactPhone, contactEmail, contactPhoto;
+	private EditText contactName, contactPhone, contactEmail;
+	private TextView contactPhoto;
 	private Button doneButton, pickPhotoBtn;
-	private ImageView capturedImg;
+	private ImageView capturedImg, pickContact;
 
 	private Bitmap imageBitmap;
 	private byte[] blob;
@@ -40,21 +46,24 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 	private boolean photoPicked = false;
 	private int reqType;
 	private int rowId;
-	
+
+	private String TAG = "addnewcontactactivity";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		reqType = getIntent().getIntExtra(ContactsMainActivity.REQ_TYPE, 
+		reqType = getIntent().getIntExtra(ContactsMainActivity.REQ_TYPE,
 				ContactsMainActivity.CONTACT_ADD_REQ_CODE);
 
 		setContentView(R.layout.add_contact);
 		bindViews();
 		setListeners();
 
-		if(reqType == ContactsMainActivity.CONTACT_UPDATE_REQ_CODE) {
+		if (reqType == ContactsMainActivity.CONTACT_UPDATE_REQ_CODE) {
 
-			rowId = getIntent().getIntExtra(ContactsMainActivity.ITEM_POSITION,1);
+			rowId = getIntent().getIntExtra(ContactsMainActivity.ITEM_POSITION,
+					1);
 			initialize(rowId);
 		}
 	}
@@ -80,63 +89,79 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 	/**
 	 * 
 	 * @brief: bindViews
-	 *
+	 * 
 	 * @return void
-	 *
+	 * 
 	 * @detail: Method to bind the xml views
 	 */
 	private void bindViews() {
 
-		contactName = (TextView) findViewById(R.id.contactName);
-		contactPhone = (TextView) findViewById(R.id.contactPhone);
-		contactEmail = (TextView) findViewById(R.id.contactEmail);
+		contactName = (EditText) findViewById(R.id.contactName);
+		contactPhone = (EditText) findViewById(R.id.contactPhone);
+		contactEmail = (EditText) findViewById(R.id.contactEmail);
 		contactPhoto = (TextView) findViewById(R.id.contactPhoto);
 		doneButton = (Button) findViewById(R.id.doneBtn);
 		pickPhotoBtn = (Button) findViewById(R.id.pickPhotoBtn);
 		capturedImg = (ImageView) findViewById(R.id.capturedImg);
+		pickContact = (ImageView) findViewById(R.id.getContact);
 	}
 
 	/**
 	 * 
 	 * @brief: setListeners
-	 *
+	 * 
 	 * @return void
-	 *
+	 * 
 	 * @detail: Method to set listeners
 	 */
 	private void setListeners() {
 		doneButton.setOnClickListener(this);
 		pickPhotoBtn.setOnClickListener(this);
+		pickContact.setOnClickListener(this);
 	}
 
 	@Override
 	public void onClick(View v) {
 
-		switch(v.getId()) {
+		switch (v.getId()) {
 		case R.id.doneBtn:
 			prepareSendData();
 			break;
 		case R.id.pickPhotoBtn:
 			pickPhoto();
 			break;
+		case R.id.getContact:
+			pickContact();
+			break;
 		}
 	}
 
+	public void pickContact() {
+		try {
+			Intent cIntent = new Intent(Intent.ACTION_PICK,
+					ContactsContract.Contacts.CONTENT_URI);
+			startActivityForResult(cIntent, PICK_CONTACT);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.i(TAG, "Exception while picking contact");
+		}
+	}
 
 	/**
 	 * 
 	 * @brief: pickPhoto
-	 *
+	 * 
 	 * @return void
-	 *
+	 * 
 	 * @detail:
 	 */
 	private void pickPhoto() {
 
 		final CharSequence[] items = { "Capture Photo", "Choose from Gallery",
-		"Cancel" };
+				"Cancel" };
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(AddNewContactActivity.this);
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				AddNewContactActivity.this);
 		builder.setTitle("Pick Photo");
 		builder.setItems(items, new DialogInterface.OnClickListener() {
 			@Override
@@ -148,10 +173,12 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 					startActivityForResult(intent, CAPTURE_PHOTO_FROM_CAMERA);
 				} else if (items[item].equals("Choose from Gallery")) {
 
-					Intent intent = new Intent(Intent.ACTION_PICK,
+					Intent intent = new Intent(
+							Intent.ACTION_PICK,
 							android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 					intent.setType("image/*");
-					startActivityForResult(Intent.createChooser(intent, "Select Photo"),
+					startActivityForResult(
+							Intent.createChooser(intent, "Select Photo"),
 							PICK_PHOTO_FROM_GALLERY);
 
 				} else if (items[item].equals("Cancel")) {
@@ -165,33 +192,31 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 		builder.show();
 	}
 
-
 	/**
 	 * 
 	 * @brief: prepareSendData
-	 *
+	 * 
 	 * @return void
-	 *
+	 * 
 	 * @detail:
 	 */
 	private void prepareSendData() {
 
 		if (TextUtils.isEmpty(contactName.getText().toString())
-				|| TextUtils.isEmpty(contactPhone.getText().toString()))
-		{
+				|| TextUtils.isEmpty(contactPhone.getText().toString())) {
 			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
 					AddNewContactActivity.this);
 			alertDialogBuilder.setTitle("Empty fields");
 			alertDialogBuilder.setMessage("Please fill phone number and name")
-			.setCancelable(true);
+					.setCancelable(true);
 			alertDialogBuilder.setNegativeButton("OK",
 					new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-					// if this button is clicked, just close
-					// the dialog box and do nothing
-					dialog.cancel();
-				}
-			});
+						public void onClick(DialogInterface dialog, int id) {
+							// if this button is clicked, just close
+							// the dialog box and do nothing
+							dialog.cancel();
+						}
+					});
 			alertDialogBuilder.show();
 		} else {
 
@@ -200,7 +225,7 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 			contact.setContactNo(contactPhone.getText().toString());
 			contact.setEmail(contactEmail.getText().toString());
 
-			if(photoPicked) {
+			if (photoPicked) {
 				contact.setPhoto(blob);
 			} else {
 				contact.setPhoto(null);
@@ -208,12 +233,12 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 
 			DatabaseManager dm = new DatabaseManager(this);
 
-			if(reqType == ContactsMainActivity.CONTACT_UPDATE_REQ_CODE) {
+			if (reqType == ContactsMainActivity.CONTACT_UPDATE_REQ_CODE) {
 				dm.updateRowAlternative(rowId, contact);
 			} else {
 				dm.addRowAlternative(contact);
 			}
-			
+
 			setResult(RESULT_OK);
 			finish();
 
@@ -226,9 +251,9 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 
 		String path;
 
-		if(requestCode == PICK_PHOTO_FROM_GALLERY) {
+		if (requestCode == PICK_PHOTO_FROM_GALLERY) {
 
-			if(resultCode == RESULT_OK) {
+			if (resultCode == RESULT_OK) {
 
 				path = getImagePath(data.getData());
 				imageBitmap = getScaledBitmap(path, 256);
@@ -237,13 +262,13 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 
 				photoPicked = true;
 
-			} else if(resultCode == RESULT_CANCELED) {
+			} else if (resultCode == RESULT_CANCELED) {
 
 				photoPicked = false;
 			}
-		} else if(requestCode == CAPTURE_PHOTO_FROM_CAMERA) {
+		} else if (requestCode == CAPTURE_PHOTO_FROM_CAMERA) {
 
-			if(resultCode == RESULT_OK) {
+			if (resultCode == RESULT_OK) {
 				path = getImagePath(data.getData());
 				imageBitmap = getScaledBitmap(path, 256);
 				capturedImg.setImageBitmap(imageBitmap);
@@ -251,19 +276,54 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 
 				photoPicked = true;
 
-			} else if(resultCode == RESULT_CANCELED) {
+			} else if (resultCode == RESULT_CANCELED) {
 
 				photoPicked = false;
 			}
+		} else if (requestCode == PICK_CONTACT) {
+			if (resultCode == Activity.RESULT_OK)
+
+			{
+				Uri contactData = data.getData();
+				Cursor c = getContentResolver().query(contactData, null, null,
+						null, null);
+				if (c.moveToFirst()) {
+					String id = c
+							.getString(c
+									.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+
+					String hasPhone = c
+							.getString(c
+									.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+
+					if (hasPhone.equalsIgnoreCase("1")) {
+						Cursor phones = getContentResolver()
+								.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+										null,
+										ContactsContract.CommonDataKinds.Phone.CONTACT_ID
+												+ " = " + id, null, null);
+						phones.moveToFirst();
+						contactPhone.setText(phones.getString(phones
+								.getColumnIndex("data1")));
+
+						contactName
+								.setText(phones.getString(phones
+										.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)));
+
+					}
+
+				}
+			}
+
 		}
 	}
 
 	/**
 	 * 
 	 * @brief: getBlob
-	 *
+	 * 
 	 * @return byte[]
-	 *
+	 * 
 	 * @detail: Method to get image in Blob format (byte array format)
 	 */
 	private byte[] getBlob() {
@@ -279,14 +339,14 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 	/**
 	 * 
 	 * @brief: getImagePath
-	 *
+	 * 
 	 * @return String
-	 *
+	 * 
 	 * @detail: Method to get the image path from the Uri
 	 */
 	private String getImagePath(Uri uri) {
 
-		String[] projection  = new String[]{MediaColumns.DATA};
+		String[] projection = new String[] { MediaColumns.DATA };
 		Cursor cursor = this.managedQuery(uri, projection, null, null, null);
 		int column_index = cursor.getColumnIndexOrThrow(MediaColumns.DATA);
 		cursor.moveToFirst();
@@ -299,9 +359,9 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 	/**
 	 * 
 	 * @brief: getScaledBitmap
-	 *
+	 * 
 	 * @return Bitmap
-	 *
+	 * 
 	 * @detail: Method to create Scalled bitmap
 	 */
 	private Bitmap getScaledBitmap(String path, int maxSize) {
@@ -318,7 +378,7 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 		width = op.outWidth;
 		height = op.outHeight;
 
-		if(width == -1) {
+		if (width == -1) {
 
 			return null;
 		}
@@ -326,7 +386,7 @@ public class AddNewContactActivity extends Activity implements OnClickListener{
 		int max = Math.max(width, height);
 		inSampleSize = 1;
 
-		while(max > maxSize) {
+		while (max > maxSize) {
 			inSampleSize *= 2;
 			max /= 2;
 		}

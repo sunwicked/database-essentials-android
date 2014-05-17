@@ -7,14 +7,24 @@
     <TextView
         android:id="@+id/contactNameText"
         style="@style/TextViewStyle"
-        android:text="@string/contact_name"
-        android:gravity="center" />
+        android:gravity="center"
+        android:text="@string/contact_name" />
+
+    <ImageView
+        android:id="@+id/getContact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/contactNameText"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/addperson" >
+    </ImageView>
 
     <EditText
         android:id="@+id/contactName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/contactNameText"
+        android:layout_toLeftOf="@id/getContact"
         android:layout_toRightOf="@id/contactNameText" />
 
     <TextView
